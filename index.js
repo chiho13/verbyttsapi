@@ -13,6 +13,8 @@ const bodyParser = require("body-parser");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 
+require("dotenv").config();
+
 // Create a limiter object
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -21,7 +23,7 @@ const limiter = rateLimit({
 });
 
 const app = express();
-const apiKey = "0d9618e6a8012dc60074e3c622654a1d";
+const apiKey = process.env.ELEVENLABS_APIKEY;
 
 // middleware to parse JSON body
 app.use(bodyParser.json());
