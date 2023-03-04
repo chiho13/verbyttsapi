@@ -96,7 +96,7 @@ app.get("/articleStatus/:transcriptionId", async (req, res) => {
     });
 
     const data = await response.json();
-    res.json(data.audioUrl[0]);
+    res.json(data);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
