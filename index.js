@@ -26,14 +26,9 @@ const app = express();
 const secretkey = process.env.PLAYHT_SECRETKEY;
 const userId = process.env.PLAYHT_USERID;
 
-const corsOptions = {
-  origin: "http://localhost:1234",
-  optionsSuccessStatus: 200,
-};
-
 // middleware to parse JSON body
 app.use(bodyParser.json());
-app.use(cors(corsOptions));
+app.use(cors());
 
 // GET endpoint to fetch the list of available voices
 app.get("/voices", limiter, async (req, res) => {
