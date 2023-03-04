@@ -23,20 +23,32 @@ const limiter = rateLimit({
 });
 
 const app = express();
-const apiKey = process.env.ELEVENLABS_APIKEY;
+const secretkey = process.env.PLAYHT_SECRETKEY;
+const userId = process.env.PLAYHT_USERID;
+
+const corsOptions = {
+  origin: "http://localhost:1234",
+  optionsSuccessStatus: 200,
+};
 
 // middleware to parse JSON body
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 // GET endpoint to fetch the list of available voices
 app.get("/voices", limiter, async (req, res) => {
+  const url = "https://play.ht/api/v1/getVoices?ultra=true";
+
   try {
-    const response = await fetch("https://api.elevenlabs.io/v1/voices", {
+    const response = await fetch(url, {
+      method: "GET",
       headers: {
-        "X-Api-Key": apiKey,
+        "Content-Type": "application/json",
+        Authorization: secretkey,
+        "X-User-ID": userId,
       },
     });
+
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -46,28 +58,45 @@ app.get("/voices", limiter, async (req, res) => {
 });
 
 // POST endpoint to convert text to speech
-app.post("/text-to-speech/:voice_id", limiter, async (req, res) => {
-  const { voice_id } = req.params;
-  const { text } = req.body;
-
-  if (!text) {
-    return res.status(400).json({ message: "Text is required" });
-  }
+app.post("/convert", async (req, res) => {
+  const url = "https://play.ht/api/v1/convert";
+  const { voice, content } = req.body;
 
   try {
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`,
-      {
-        method: "POST",
-        headers: {
-          "X-Api-Key": apiKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
-      }
-    );
-    const data = await response.blob();
-    res.send(data);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: secretkey,
+        "X-User-ID": userId,
+      },
+      body: JSON.stringify({ voice, content }),
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/articleStatus/:transcriptionId", async (req, res) => {
+  const transcriptionId = req.params.transcriptionId;
+  const url = `https://play.ht/api/v1/articleStatus?transcriptionId=${transcriptionId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: secretkey,
+        "X-User-ID": userId,
+      },
+    });
+
+    const data = await response.json();
+    res.json(data.audioUrl[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
