@@ -8,10 +8,13 @@ import("node-fetch")
   .catch((error) => {
     console.error(error);
   });
-
+const multer = require("multer");
+const ffmpeg = require("@ffmpeg/ffmpeg");
+const fs = require("fs");
 const bodyParser = require("body-parser");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
+const https = require("https");
 
 require("dotenv").config();
 
@@ -96,6 +99,42 @@ app.get("/articleStatus/:transcriptionId", async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
+});
+app.get("/download/:transcriptionId", async (req, res) => {
+  const transcriptionId = req.params.transcriptionId;
+  const url = `https://play.ht/api/v1/articleStatus?transcriptionId=${transcriptionId}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: secretkey,
+      "X-User-ID": userId,
+    },
+  });
+  const data = await response.json();
+
+  const audioUrl = data.audioUrl[0];
+
+  // Set the Content-Disposition header for the download
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="synthesised-audio.wav"'
+  );
+  res.setHeader("Content-Type", "audio/wav");
+
+  // Stream the audio file directly to the client
+  const options = {
+    headers: {
+      Referer: "https://play.ht/",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+    },
+  };
+
+  https.get(audioUrl, options, (audioResponse) => {
+    audioResponse.pipe(res);
+  });
 });
 
 // start the server
