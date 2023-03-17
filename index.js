@@ -33,7 +33,14 @@ const userId = process.env.PLAYHT_USERID;
 
 // middleware to parse JSON body
 app.use(bodyParser.json());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Update this to your frontend URL
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-User-ID"],
+  })
+);
 
 const io = socketIo(server, {
   cors: {
