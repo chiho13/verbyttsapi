@@ -15,8 +15,10 @@ const bodyParser = require("body-parser");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const https = require("https");
+const http = require("http");
 const socketIo = require("socket.io");
 
+const server = http.createServer(app);
 require("dotenv").config();
 
 // Create a limiter object
@@ -33,74 +35,6 @@ const userId = process.env.PLAYHT_USERID;
 // middleware to parse JSON body
 app.use(bodyParser.json());
 app.use(cors());
-
-// GET endpoint to fetch the list of available voices
-app.get("/voices", limiter, async (req, res) => {
-  const url = "https://play.ht/api/v1/getVoices?ultra=true";
-
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: secretkey,
-        "X-User-ID": userId,
-      },
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-// POST endpoint to convert text to speech
-app.post("/convert", async (req, res) => {
-  const url = "https://play.ht/api/v1/convert";
-  const { voice, content } = req.body;
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: secretkey,
-        "X-User-ID": userId,
-      },
-      body: JSON.stringify({ voice, content }),
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-app.get("/articleStatus/:transcriptionId", async (req, res) => {
-  const transcriptionId = req.params.transcriptionId;
-  const url = `https://play.ht/api/v1/articleStatus?transcriptionId=${transcriptionId}`;
-
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: secretkey,
-        "X-User-ID": userId,
-      },
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
 
 const io = socketIo(server);
 
