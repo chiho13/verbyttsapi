@@ -1,13 +1,6 @@
 const express = require("express");
 // Load node-fetch as an ECMAScript module
-import("node-fetch")
-  .then((module) => {
-    const fetch = module.default;
-    // Use the fetch function here
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+const fetch = require("node-fetch");
 const multer = require("multer");
 const ffmpeg = require("@ffmpeg/ffmpeg");
 const fs = require("fs");
@@ -36,7 +29,12 @@ const userId = process.env.PLAYHT_USERID;
 app.use(bodyParser.json());
 app.use(cors());
 
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: "*", // Update this to your frontend URL in production
+    methods: ["GET", "POST"],
+  },
+});
 
 app.post("/webhook", (req, res) => {
   const event = req.body;
@@ -100,6 +98,6 @@ app.get("/download/:transcriptionId", async (req, res) => {
 });
 
 // start the server
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log("Server is listening on port 3000");
 });
