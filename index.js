@@ -48,30 +48,30 @@ const io = new Server(server, {
   },
 });
 
-app.post("/webhook", (req, res) => {
-  const event = req.body;
+io.on("connection", (socket) => {
+  app.post("/webhook", (req, res) => {
+    const event = req.body;
 
-  if (event.status === "SUCCESS") {
-    const transcriptionId = event.transcriptionId;
-    const status = event.status;
-    const voice = event.voice;
-    const audioUrl = event.metadata.output[0];
+    if (event.status === "SUCCESS") {
+      const transcriptionId = event.transcriptionId;
+      const status = event.status;
+      const voice = event.voice;
+      const audioUrl = event.metadata.output[0];
 
-    console.log(
-      `Status update for transcription ${transcriptionId}: ${status} (voice: ${voice})`
-    );
+      console.log(
+        `Status update for transcription ${transcriptionId}: ${status} (voice: ${voice})`
+      );
 
-    io.on("connection", (socket) => {
       if (status === "SUCCESS") {
         console.log(`Audio URL: ${audioUrl}`);
 
         // Emit the event to the frontend
         io.sockets.emit("audioUrl", { transcriptionId, audioUrl });
       }
-    });
-  }
+    }
 
-  res.status(200).send("OK");
+    res.status(200).send("OK");
+  });
 });
 
 app.get("/download/:transcriptionId", async (req, res) => {
