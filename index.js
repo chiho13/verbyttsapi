@@ -42,30 +42,28 @@ const io = new Server(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  app.post("/webhook", (req, res) => {
-    const event = req.body;
+app.post("/webhook", (req, res) => {
+  const event = req.body;
 
-    if (event.status === "SUCCESS") {
-      const transcriptionId = event.transcriptionId;
-      const status = event.status;
-      const voice = event.voice;
-      const audioUrl = event.metadata.output[0];
+  if (event.status === "SUCCESS") {
+    const transcriptionId = event.transcriptionId;
+    const status = event.status;
+    const voice = event.voice;
+    const audioUrl = event.metadata.output[0];
 
-      console.log(
-        `Status update for transcription ${transcriptionId}: ${status} (voice: ${voice})`
-      );
+    console.log(
+      `Status update for transcription ${transcriptionId}: ${status} (voice: ${voice})`
+    );
 
-      if (status === "SUCCESS") {
-        console.log(`Audio URL: ${audioUrl}`);
+    if (status === "SUCCESS") {
+      console.log(`Audio URL: ${audioUrl}`);
 
-        // Emit the event to the frontend
-        io.sockets.emit("audioUrl", { transcriptionId, audioUrl });
-      }
+      // Emit the event to the frontend
+      io.sockets.emit("audioUrl", { transcriptionId, audioUrl });
     }
+  }
 
-    res.status(200).send("OK");
-  });
+  res.status(200).send("OK");
 });
 
 app.get("/download/:transcriptionId", async (req, res) => {
@@ -102,6 +100,14 @@ app.get("/download/:transcriptionId", async (req, res) => {
 
   https.get(audioUrl, options, (audioResponse) => {
     audioResponse.pipe(res);
+  });
+});
+
+io.on("connection", (socket) => {
+  console.log("User connected");
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
   });
 });
 
