@@ -37,7 +37,7 @@ app.use(cors());
 
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Update this to your frontend URL in production
+    origin: "http://localhost:3000", // Update this to your frontend URL in production
     methods: ["GET", "POST"],
   },
 });
