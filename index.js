@@ -45,23 +45,7 @@ const io = new Server(server, {
 app.post("/webhook", (req, res) => {
   const event = req.body;
 
-  if (event.status === "SUCCESS") {
-    const transcriptionId = event.transcriptionId;
-    const status = event.status;
-    const voice = event.voice;
-    const audioUrl = event.metadata.output[0];
-
-    console.log(
-      `Status update for transcription ${transcriptionId}: ${status} (voice: ${voice})`
-    );
-
-    if (status === "SUCCESS") {
-      console.log(`Audio URL: ${audioUrl}`);
-
-      // Emit the event to the frontend
-      io.sockets.emit("audioUrl", { transcriptionId, audioUrl });
-    }
-  }
+  io.sockets.emit("gettexttospeechstatus", event);
 
   res.status(200).send("OK");
 });
