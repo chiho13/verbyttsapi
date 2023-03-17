@@ -100,6 +100,33 @@ app.get("/articleStatus/:transcriptionId", async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+const io = socketIo(server);
+
+app.post("/webhook", (req, res) => {
+  const event = req.body;
+
+  if (event.status === "SUCCESS") {
+    const transcriptionId = event.transcriptionId;
+    const status = event.status;
+    const voice = event.voice;
+    const audioUrl = event.metadata.output[0];
+
+    console.log(
+      `Status update for transcription ${transcriptionId}: ${status} (voice: ${voice})`
+    );
+
+    if (status === "SUCCESS") {
+      console.log(`Audio URL: ${audioUrl}`);
+
+      // Emit the event to the frontend
+      io.sockets.emit("audioUrl", { transcriptionId, audioUrl });
+    }
+  }
+
+  res.status(200).send("OK");
+});
+
 app.get("/download/:transcriptionId", async (req, res) => {
   const transcriptionId = req.params.transcriptionId;
   const url = `https://play.ht/api/v1/articleStatus?transcriptionId=${transcriptionId}`;
