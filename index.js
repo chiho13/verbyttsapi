@@ -18,8 +18,10 @@ const https = require("https");
 const http = require("http");
 const app = express();
 const server = http.createServer(app);
-const { Server } = require("socket.io");
 require("dotenv").config();
+
+const WebSocket = require("ws");
+const wss = new WebSocket.Server({ server });
 
 // Create a limiter object
 const limiter = rateLimit({
@@ -36,13 +38,7 @@ app.use(bodyParser.json());
 
 app.use(cors());
 
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000", // Update this to your frontend URL in production
-  },
-});
-
-io.on("connection", (socket) => {
+wss.on("connection", (ws) => {
   app.post("/webhook", (req, res) => {
     const event = req.body;
 
@@ -59,8 +55,13 @@ io.on("connection", (socket) => {
       if (status === "SUCCESS") {
         console.log(`Audio URL: ${audioUrl}`);
 
-        // Emit the event to the frontend
-        io.sockets.emit("audioUrl", { transcriptionId, audioUrl });
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(
+              JSON.stringify({ type: "audioUrl", transcriptionId, audioUrl })
+            );
+          }
+        });
       }
     }
 
