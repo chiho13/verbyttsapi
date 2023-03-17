@@ -17,7 +17,7 @@ const cors = require("cors");
 const https = require("https");
 const http = require("http");
 const socketIo = require("socket.io");
-
+const app = express();
 const server = http.createServer(app);
 require("dotenv").config();
 
@@ -28,7 +28,6 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again in a few minutes",
 });
 
-const app = express();
 const secretkey = process.env.PLAYHT_SECRETKEY;
 const userId = process.env.PLAYHT_USERID;
 
