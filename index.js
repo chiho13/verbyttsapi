@@ -1,6 +1,13 @@
 const express = require("express");
 // Load node-fetch as an ECMAScript module
-const fetch = require("node-fetch");
+import("node-fetch")
+  .then((module) => {
+    const fetch = module.default;
+    // Use the fetch function here
+  })
+  .catch((error) => {
+    console.error(error);
+  });
 const multer = require("multer");
 const ffmpeg = require("@ffmpeg/ffmpeg");
 const fs = require("fs");
